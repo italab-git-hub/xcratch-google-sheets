@@ -1,66 +1,63 @@
-const API_KEY = 'AIzaSyASHag5PJVfUFV4bEI8w66mN_ZhhFbAT_M'; // Google Cloud Consoleで取得したAPIキーをここに入力してください
-
-export default class GoogleSheetsExtension {
-  constructor() {
-    this.sheetId = null; // スプレッドシートIDを保存
+class GoogleSheetsExtension {
+  constructor (runtime) {
+    this.runtime = runtime;
+    this.API_KEY = 'AIzaSyASHag5PJVfUFV4bEI8w66mN_ZhhFbAT_M'; // Google Cloud Consoleで取得したAPIキーを入力
+    this.sheetId = null;
   }
 
-  getInfo() {
+  getInfo () {
     return {
       id: 'googleSheets',
       name: 'Google Sheets',
       blocks: [
         {
           opcode: 'setSpreadsheet',
-          blockType: Scratch.BlockType.COMMAND,
+          blockType: 'command',
           text: 'スプレッドシートURLを設定 [URL]',
           arguments: {
             URL: {
-              type: Scratch.ArgumentType.STRING,
+              type: 'string',
               defaultValue: 'https://docs.google.com/spreadsheets/d/your-sheet-id/edit'
             }
           }
         },
         {
           opcode: 'writeCell',
-          blockType: Scratch.BlockType.COMMAND,
+          blockType: 'command',
           text: '[ROW] 行 [COLUMN] 列に [VALUE] を書き込む',
           arguments: {
-            ROW: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
-            COLUMN: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
-            VALUE: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello' }
+            ROW: { type: 'number', defaultValue: 1 },
+            COLUMN: { type: 'number', defaultValue: 1 },
+            VALUE: { type: 'string', defaultValue: 'Hello' }
           }
         },
         {
           opcode: 'readCell',
-          blockType: Scratch.BlockType.REPORTER,
+          blockType: 'reporter',
           text: '[ROW] 行 [COLUMN] 列の値を取得',
           arguments: {
-            ROW: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 },
-            COLUMN: { type: Scratch.ArgumentType.NUMBER, defaultValue: 1 }
+            ROW: { type: 'number', defaultValue: 1 },
+            COLUMN: { type: 'number', defaultValue: 1 }
           }
         }
       ]
     };
   }
 
-  // スプレッドシートURLからIDを抽出して保存
-  setSpreadsheet(args) {
+  setSpreadsheet (args) {
     const url = args.URL;
     const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
     if (match) {
       this.sheetId = match[1];
-      console.log(`スプレッドシートIDが設定されました：${this.sheetId}`);
+      return `スプレッドシートIDが設定されました：${this.sheetId}`;
     } else {
-      console.error('無効なスプレッドシートURLです');
+      return '無効なスプレッドシートURLです';
     }
   }
 
-  // 指定したセルに値を書き込む
-  async writeCell(args) {
+  async writeCell (args) {
     if (!this.sheetId) {
-      console.error('スプレッドシートが設定されていません');
-      return;
+      return 'スプレッドシートが設定されていません';
     }
 
     const row = args.ROW;
@@ -68,59 +65,51 @@ export default class GoogleSheetsExtension {
     const value = args.VALUE;
     const range = `Sheet1!${this.colToLetter(col)}${row}`;
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${range}?valueInputOption=USER_ENTERED`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${this.API_KEY}`;
     const body = { values: [[value]] };
 
     try {
       const response = await fetch(url, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': API_KEY 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
 
       if (!response.ok) {
-        console.error('セルへの書き込みに失敗しました', await response.text());
+        return 'セルへの書き込みに失敗しました';
       } else {
-        console.log('セルへの書き込みが成功しました');
+        return 'セルへの書き込みが成功しました';
       }
     } catch (error) {
-      console.error('エラーが発生しました', error);
+      return 'エラーが発生しました';
     }
   }
 
-  // 指定したセルの値を取得
-  async readCell(args) {
+  async readCell (args) {
     if (!this.sheetId) {
-      console.error('スプレッドシートが設定されていません');
-      return '';
+      return 'スプレッドシートが設定されていません';
     }
 
     const row = args.ROW;
     const col = args.COLUMN;
     const range = `Sheet1!${this.colToLetter(col)}${row}`;
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${range}?key=${API_KEY}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${range}?key=${this.API_KEY}`;
 
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        console.error('セルの読み取りに失敗しました', await response.text());
-        return '';
+        return 'セルの読み取りに失敗しました';
       }
 
       const data = await response.json();
       return data.values ? data.values[0][0] : '';
     } catch (error) {
-      console.error('エラーが発生しました', error);
-      return '';
+      return 'エラーが発生しました';
     }
   }
 
-  // 列番号をアルファベット表記に変換（例：1 -> A, 2 -> B）
-  colToLetter(col) {
+  colToLetter (col) {
     let letter = '';
     while (col > 0) {
       let temp = (col - 1) % 26;
@@ -130,3 +119,5 @@ export default class GoogleSheetsExtension {
     return letter;
   }
 }
+
+module.exports = GoogleSheetsExtension;
