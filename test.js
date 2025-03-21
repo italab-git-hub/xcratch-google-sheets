@@ -1,4 +1,4 @@
-class SheetAPI {
+export default class SheetAPI {
     getInfo() {
         return {
             id: 'sheetapi',
@@ -59,6 +59,3 @@ class SheetAPI {
         }
     }
 }
-
-// Xcratchでは Scratch はグローバルに存在する前提でOK
-Scratch.extensions.register(new SheetAPI());
