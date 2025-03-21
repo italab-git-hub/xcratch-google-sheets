@@ -22,7 +22,7 @@ export default function(Scratch) {
             text: 'GAS [url] に [値] を [シートID] / [シート名] / [セル] に書く',
             arguments: {
               url: { type: Scratch.ArgumentType.STRING, defaultValue: 'https://script.google.com/macros/s/AKfycbwI27iHVqmprJ-oEvLa2pLJZo7Hj5FJVh4jA2-VWu0LLQyzO4yRfFHJNS40JqY4Y1bc/exec' },
-              sheetId: { type: Scratch.ArgumentType.STRING, defaultValue: 'スプレッドシートID' },
+              sheetId: { type: Scratch.ArgumentType.STRING, defaultValue: '1BdTPdUJGUs4NzyQLVhi_FAPnpOC7oGXD7jVk_Trk5vY' },
               sheetName: { type: Scratch.ArgumentType.STRING, defaultValue: 'Sheet1' },
               cell: { type: Scratch.ArgumentType.STRING, defaultValue: 'A1' },
               value: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello' }
